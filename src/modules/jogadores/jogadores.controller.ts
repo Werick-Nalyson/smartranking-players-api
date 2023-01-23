@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { CriarJogadorDto } from './dto/criarJogador.dto';
 import { JogadoresService } from './jogadores.service';
 
@@ -10,7 +10,16 @@ export class JogadoresController {
   async criarAtualizarJogador(
     @Body() jogadorDto: CriarJogadorDto,
   ): Promise<any> {
-    const jogador = await this.jogadoresService.criarJogador(jogadorDto);
+    const jogador = await this.jogadoresService.criarAtualizarJogador(
+      jogadorDto,
+    );
+
+    return jogador;
+  }
+
+  @Get()
+  async capturarTodos(): Promise<any> {
+    const jogador = await this.jogadoresService.capturarTodos();
 
     return jogador;
   }
