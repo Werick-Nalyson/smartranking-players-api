@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Delete,
+  Param,
+} from '@nestjs/common';
 import { CriarJogadorDto } from './dto/criarJogador.dto';
 import { Jogador } from './interface/jogador.interface';
 import { JogadoresService } from './jogadores.service';
@@ -29,5 +37,12 @@ export class JogadoresController {
 
       return jogador;
     }
+  }
+
+  @Delete(':id')
+  async deletarJogador(@Param('id') id: string): Promise<Jogador[] | Jogador> {
+    await this.jogadoresService.deletarJogador(id);
+
+    return;
   }
 }

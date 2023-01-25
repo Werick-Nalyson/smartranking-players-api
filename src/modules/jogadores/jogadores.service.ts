@@ -61,4 +61,15 @@ export class JogadoresService {
 
     return jogador;
   }
+
+  async deletarJogador(id: string): Promise<void> {
+    const jogadorExiste = this.jogadores.findIndex(
+      (jogador) => jogador._id === id,
+    );
+
+    if (jogadorExiste == -1)
+      throw new NotFoundException('Jogador não encontrado');
+
+    this.jogadores.splice(jogadorExiste, 1);
+  }
 }
