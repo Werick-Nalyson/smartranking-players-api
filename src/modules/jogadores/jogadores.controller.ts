@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { CriarJogadorDto } from './dto/criarJogador.dto';
+import { Jogador } from './interface/jogador.interface';
 import { JogadoresService } from './jogadores.service';
 
 @Controller('api/v1/jogadores')
@@ -18,9 +19,15 @@ export class JogadoresController {
   }
 
   @Get()
-  async capturarTodos(): Promise<any> {
-    const jogador = await this.jogadoresService.capturarTodos();
+  async capturarTodos(
+    @Query('email') email: string,
+  ): Promise<Jogador[] | Jogador> {
+    if (email) {
+      return this.jogadoresService.capturarPorEmail(email);
+    } else {
+      const jogador = await this.jogadoresService.capturarTodos();
 
-    return jogador;
+      return jogador;
+    }
   }
 }
