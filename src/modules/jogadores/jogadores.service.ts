@@ -3,11 +3,17 @@ import { CriarJogadorDto } from './dto/criarJogador.dto';
 import { Jogador } from './interface/jogador.interface';
 import { v4 as uuidV4 } from 'uuid';
 import { NotFoundException } from '@nestjs/common/exceptions';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class JogadoresService {
   private jogadores: Jogador[] = [];
   private readonly logger = new Logger(JogadoresService.name);
+
+  constructor(
+    @InjectModel('Jogador') private readonly jogadorModel: Model<Jogador>,
+  ) {}
 
   async criarAtualizarJogador(data: CriarJogadorDto): Promise<Jogador> {
     const jogadorExiste = await this.capturarPorEmail(data.email).catch(
