@@ -1,14 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CriarJogadorDto } from './dto/criarJogador.dto';
 import { Jogador } from './interface/jogador.interface';
-import { v4 as uuidV4 } from 'uuid';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 @Injectable()
 export class JogadoresService {
-  private jogadores: Jogador[] = [];
   private readonly logger = new Logger(JogadoresService.name);
 
   constructor(
@@ -28,17 +26,16 @@ export class JogadoresService {
   }
 
   private async criarJogador(data: CriarJogadorDto): Promise<Jogador> {
-    const jogador: Jogador = {
-      _id: uuidV4(),
+    const jogadorCriado = new this.jogadorModel({
       nome: data.nome,
       email: data.email,
       ranking: 'A',
       posicaoRanking: 0,
       urlFotoJogador: '',
       telefoneCelular: data.telefoneCelular,
-    };
+    });
 
-    this.jogadores.push(jogador);
+    const jogador = await jogadorCriado.save();
 
     this.logger.log(`criar jogador: ${JSON.stringify(data, null, 2)}`);
 
@@ -51,17 +48,23 @@ export class JogadoresService {
   ): Promise<Jogador> {
     jogador.nome = data.nome;
 
+    await jogador.save();
+
     this.logger.log(`atualizar jogador: ${JSON.stringify(data, null, 2)}`);
 
     return jogador;
   }
 
   async capturarTodos(): Promise<Jogador[]> {
-    return this.jogadores;
+    return this.jogadorModel.find();
   }
 
   async capturarPorEmail(email: string): Promise<Jogador> {
-    const jogador = this.jogadores.find((jogador) => jogador.email === email);
+    const jogador = await this.jogadorModel
+      .findOne({
+        email,
+      })
+      .exec();
 
     if (!jogador) throw new NotFoundException('Jogador não encontrado');
 
@@ -69,13 +72,18 @@ export class JogadoresService {
   }
 
   async deletarJogador(id: string): Promise<void> {
-    const jogadorExiste = this.jogadores.findIndex(
-      (jogador) => jogador._id === id,
-    );
+    const jogadorExiste = await this.jogadorModel
+      .findOne({
+        _id: id,
+      })
+      .exec();
 
-    if (jogadorExiste == -1)
-      throw new NotFoundException('Jogador não encontrado');
+    if (!jogadorExiste) throw new NotFoundException('Jogador não encontrado');
 
-    this.jogadores.splice(jogadorExiste, 1);
+    return this.jogadorModel
+      .remove({
+        _id: id,
+      })
+      .exec();
   }
 }
