@@ -1,9 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CriarJogadorDto } from './dto/criarJogador.dto';
 import { Jogador } from './interface/jogador.interface';
-import { NotFoundException } from '@nestjs/common/exceptions';
+import {
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { AtualizarJogadorDto } from './dto/atualizar.jogador.dto';
 
 @Injectable()
 export class JogadoresService {
@@ -13,19 +17,17 @@ export class JogadoresService {
     @InjectModel('Jogador') private readonly jogadorModel: Model<Jogador>,
   ) {}
 
-  async criarAtualizarJogador(data: CriarJogadorDto): Promise<Jogador> {
-    const jogadorExiste = await this.capturarPorEmail(data.email).catch(
-      () => false,
-    );
+  async criarJogador(data: CriarJogadorDto): Promise<Jogador> {
+    const jogadorExiste = await this.jogadorModel
+      .findOne({
+        email: data.email,
+      })
+      .exec();
 
-    if (!jogadorExiste) {
-      return this.criarJogador(data);
-    } else {
-      return this.atualizarJogador(jogadorExiste as Jogador, data);
+    if (jogadorExiste) {
+      throw new BadRequestException('E-mail ou telefone já cadastrado');
     }
-  }
 
-  private async criarJogador(data: CriarJogadorDto): Promise<Jogador> {
     const jogadorCriado = new this.jogadorModel({
       nome: data.nome,
       email: data.email,
@@ -42,27 +44,40 @@ export class JogadoresService {
     return jogador;
   }
 
-  private async atualizarJogador(
-    jogador: Jogador,
-    data: CriarJogadorDto,
+  async atualizarJogador(
+    id: string,
+    data: AtualizarJogadorDto,
   ): Promise<Jogador> {
-    jogador.nome = data.nome;
+    const jogadorExiste = await this.capturarPeloId(id).catch(() => {
+      return {} as Jogador;
+    });
 
-    await jogador.save();
+    if (!jogadorExiste?._id)
+      throw new NotFoundException('Jogador não encontrado');
 
-    this.logger.log(`atualizar jogador: ${JSON.stringify(data, null, 2)}`);
+    jogadorExiste.nome = data.nome;
 
-    return jogador;
+    await jogadorExiste.save();
+
+    this.logger.log(
+      `atualizar jogador ${jogadorExiste._id}: ${JSON.stringify(
+        data,
+        null,
+        2,
+      )}`,
+    );
+
+    return jogadorExiste;
   }
 
   async capturarTodos(): Promise<Jogador[]> {
     return this.jogadorModel.find();
   }
 
-  async capturarPorEmail(email: string): Promise<Jogador> {
+  async capturarPeloId(id: string): Promise<Jogador> {
     const jogador = await this.jogadorModel
       .findOne({
-        email,
+        _id: id,
       })
       .exec();
 
