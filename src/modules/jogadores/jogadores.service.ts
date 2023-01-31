@@ -80,10 +80,12 @@ export class JogadoresService {
 
     if (!jogadorExiste) throw new NotFoundException('Jogador não encontrado');
 
-    return this.jogadorModel
-      .remove({
+    await this.jogadorModel
+      .deleteOne({
         _id: id,
       })
       .exec();
+
+    return;
   }
 }
