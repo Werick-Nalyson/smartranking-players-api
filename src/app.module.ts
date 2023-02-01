@@ -2,14 +2,14 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import configuration from './config/configuration';
-import { JogadoresModule } from './modules/jogadores/jogadores.module';
+import { PlayersModule } from './modules/players/players.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       load: [configuration],
     }),
-    JogadoresModule,
+    PlayersModule,
     MongooseModule.forRoot(process.env.MONGODB_CONNECTION_STRING),
   ],
   controllers: [],
