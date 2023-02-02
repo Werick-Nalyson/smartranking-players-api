@@ -30,4 +30,8 @@ export class CategoriesService {
 
     return await categoriaCriada.save();
   }
+
+  async getAll() {
+    return this.categorieModel.find().populate('players').exec();
+  }
 }

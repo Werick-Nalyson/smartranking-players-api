@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Post,
+  Get,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -16,5 +17,10 @@ export class CategoriesController {
   @UsePipes(ValidationPipe)
   create(@Body() createCategorieDto: CreateCategorieDto) {
     return this.categoriesService.create(createCategorieDto);
+  }
+
+  @Get()
+  async getAll() {
+    return this.categoriesService.getAll();
   }
 }
