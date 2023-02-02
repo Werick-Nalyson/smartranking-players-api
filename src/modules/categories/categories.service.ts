@@ -39,6 +39,18 @@ export class CategoriesService {
     return this.categorieModel.find().populate('players').exec();
   }
 
+  async getById(id: string) {
+    const categorie = await this.categorieModel
+      .findOne({
+        _id: id,
+      })
+      .exec();
+
+    if (!categorie) throw new NotFoundException('Categorie not found');
+
+    return categorie;
+  }
+
   async update(
     categorie: string,
     updateCategorieDto: UpdateCategorieDto,

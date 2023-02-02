@@ -27,6 +27,11 @@ export class CategoriesController {
     return this.categoriesService.getAll();
   }
 
+  @Get(':id')
+  async getById(@Param('id') id: string) {
+    return this.categoriesService.getById(id);
+  }
+
   @Patch(':categorie')
   @UsePipes(ValidationPipe)
   async atualizarCategoria(
