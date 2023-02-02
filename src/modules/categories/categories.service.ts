@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common/exceptions';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { PlayersService } from '../players/players.service';
 import { CreateCategorieDto } from './dto/createCategorie.dto';
 import { UpdateCategorieDto } from './dto/updateCategorie.dto';
 import { Categorie } from './interface/categorie.interface';
@@ -13,6 +14,7 @@ import { Categorie } from './interface/categorie.interface';
 export class CategoriesService {
   constructor(
     @InjectModel('Categorie') private readonly categorieModel: Model<Categorie>,
+    private readonly playersService: PlayersService,
   ) {}
 
   async create(createCategorieDto: CreateCategorieDto): Promise<Categorie> {
@@ -71,5 +73,35 @@ export class CategoriesService {
     await categorieExists.save();
 
     return categorieExists;
+  }
+
+  async assignCategoriePlayer(params: string[]): Promise<void> {
+    const { categorie, playerId } = params as any;
+
+    const categorieExists = await this.categorieModel
+      .findOne({ categorie })
+      .exec();
+
+    const playerAlreadyExistsCategory = await this.categorieModel
+      .find({ categorie })
+      .where('players')
+      .in(playerId)
+      .exec();
+
+    await this.playersService.getById(playerId);
+
+    if (!categorieExists) {
+      throw new BadRequestException(`Categorie ${categorie} not found`);
+    }
+
+    if (playerAlreadyExistsCategory.length > 0) {
+      throw new BadRequestException(
+        `Player ${playerId} already exists in Categorie ${categorie}!`,
+      );
+    }
+
+    categorieExists.players.push(playerId);
+
+    await categorieExists.save();
   }
 }
