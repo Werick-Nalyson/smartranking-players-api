@@ -104,4 +104,20 @@ export class CategoriesService {
 
     await categorieExists.save();
   }
+
+  async getCategoriePlayer(playerId: any): Promise<Categorie> {
+    const players = await this.playersService.getAll();
+
+    const playerFilter = players.filter((player) => player._id == playerId);
+
+    if (playerFilter.length == 0) {
+      throw new BadRequestException(`The Id ${playerId} is not a player`);
+    }
+
+    return await this.categorieModel
+      .findOne()
+      .where('players')
+      .in(playerId)
+      .exec();
+  }
 }
